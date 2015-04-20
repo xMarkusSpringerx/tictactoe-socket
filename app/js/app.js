@@ -1,5 +1,10 @@
 $(function() {
+  var chosenElement;
+
+
   drawCircle = function (canvasElement, options) {
+    // TODO: Add defaults for data attribs
+
     var context     = canvasElement.getContext('2d'),
         centerX     = canvasElement.width / 2,
         centerY     = canvasElement.height / 2,
@@ -45,6 +50,24 @@ $(function() {
     $('[data-spy="x"]').each(function () {
       drawX(this);
     });
+
+    $('.single-item').on('click', function () {
+      var canvasElements = $(this).find('canvas');
+
+      if (! chosenElement) {
+        $('[data-chosen-element]').each(function () {
+            chosenElement = $(this).data('chosen-element');
+        });
+      }
+
+      canvasElements.each(function () {
+        if (chosenElement == 'x') {
+          drawX(this);
+        } else if (chosenElement == 'circle') {
+          drawCircle(this);
+        }
+      });
+    })
   });
 
 });
