@@ -1,18 +1,22 @@
   .tic-tac-toe {
-    width: 700px;
+    margin: 0 auto;
+    width: 50%;
     height: 700px;
     border: 1px solid;
   }
 
   .row {
     width: 100%;
-    height: 30%;
+    height: 33.33%;
   }
 
-  .single_item {
-    background: none repeat scroll 0 0 lightblue;
+  .single-item {
     float: left;
     height: 100%;
-    margin: 3px;
-    width: 30%;
+    width: 33.33%;
+  }
+
+  .single-item-inner {
+    width: 100%;
+    height: 100%;
   }
