@@ -13,3 +13,7 @@ bower install
 ```
 node server.js
 ```
+
+Now you can access the application on your `localhost` with port `3000`!
+
+![Application Preview]('./preview/app.png')
