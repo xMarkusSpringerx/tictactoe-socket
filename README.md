@@ -16,4 +16,6 @@ node server.js
 
 Now you can access the application on your `localhost` with port `3000`!
 
-![Application Preview]('app.png')
+![Application Preview][1]
+
+[1]: https://github.com/xMarkusSpringerx/tictactoe-socket/blob/master/resources/app.png
