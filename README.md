@@ -7,7 +7,6 @@ A websocket based tictactoe game
 ```
 npm install
 bower install
-
 ```
 
 # start application
