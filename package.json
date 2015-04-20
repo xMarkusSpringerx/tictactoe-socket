@@ -1,0 +1,17 @@
+{
+  "name": "ticktacktoe-snake",
+  "description": "A tick tack toe game combined with the magic of websockets.",
+  "author": "Markus Springer",
+  "contributors": [{
+      "name": "dazorni"
+    }],
+  "dependencies": {
+    "bower": "*",
+    "express": "*",
+    "socket.io": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:xMarkusSpringerx/tictactoe-socket.git"
+  }
+}
