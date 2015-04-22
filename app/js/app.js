@@ -1,3 +1,6 @@
+
+
+
 $(function() {
   var chosenElement;
 
@@ -12,6 +15,7 @@ $(function() {
         borderColor = $(canvasElement).data('border-color'),
         lineWidth   = 2,
         radius      = centerY / 1.5;
+
 
     context.beginPath();
     context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
@@ -43,6 +47,7 @@ $(function() {
   };
 
   $(document).ready(function () {
+
     $('[data-spy="circle"]').each(function () {
       drawCircle(this);
     });
@@ -54,19 +59,24 @@ $(function() {
     $('.single-item').on('click', function () {
       var canvasElements = $(this).find('canvas');
 
+      // Check if clicked Element is already chosen
       if (! chosenElement) {
         $('[data-chosen-element]').each(function () {
             chosenElement = $(this).data('chosen-element');
         });
       }
 
+      // Draw
       canvasElements.each(function () {
+
+        // Check if player draws with X or with an Circle
         if (chosenElement == 'x') {
           drawX(this);
         } else if (chosenElement == 'circle') {
           drawCircle(this);
         }
       });
+
     })
   });
 
