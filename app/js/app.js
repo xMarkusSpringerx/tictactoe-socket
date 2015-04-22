@@ -2,7 +2,34 @@
 
 
 $(function() {
+
+  //Hide it first
+  $('.tic-tac-toe').hide();
+  $('.game-mode').hide();
+  $('#enter-connection-code').hide();
+
   var chosenElement;
+
+  $('#start-game').on('click', function(){
+
+    $(this).hide();
+    $('.game-mode').fadeIn();
+  });
+
+
+  $('#host').on('click', function(){
+    // You are the Host of the Game
+    $('#enter').hide();
+    // Now generate Code
+
+    $('#connection-code').text('asdfasdf');
+  });
+
+  $('#enter').on('click', function(){
+    // You get the Code and enter the game
+    $('#host').hide();
+    $('#enter-connection-code').fadeIn();
+  });
 
 
   drawCircle = function (canvasElement, options) {
