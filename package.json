@@ -9,7 +9,8 @@
     "bower": "*",
     "express": "*",
     "socket.io": "*",
-    "rethinkdb": "*"
+    "rethinkdb": "*",
+    "sweetalert": "*"
   },
   "repository": {
     "type": "git",
