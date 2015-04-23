@@ -64,6 +64,8 @@ io.on('connection', function (socket) {
 
   });
 
+
+
     // If User wants to enter a Room
     socket.on('submit_connection_nr', function(data){
         // Get all rooms with posted room_id
@@ -85,9 +87,11 @@ io.on('connection', function (socket) {
                 }
             });
         });
-
-
     });
+
+   socket.on('set_input', function(){
+    console.log('x gesetzt');
+   });
 
 
 });

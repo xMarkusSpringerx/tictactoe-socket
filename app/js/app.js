@@ -47,14 +47,13 @@ $(function() {
     $('#enter').hide();
     // Now generate Code
 
+    chosenElement = "circle";
+      
     socket.emit('new_host');
-
-
   });
 
   $('#enter').on('click', function(){
     // You get the Code and enter the game
-
     $('#host').hide();
     $('#enter-connection-code').fadeIn();
   });
@@ -63,13 +62,14 @@ $(function() {
     var connection_nr = $('#connection-host-code').val();
     console.log('w', connection_nr, 'w');
     socket.emit('submit_connection_nr', {nr : connection_nr});
+
+    chosenElement = "x";
   });
 
 
 
   drawCircle = function (canvasElement, options) {
     // TODO: Add defaults for data attribs
-
     var context     = canvasElement.getContext('2d'),
         centerX     = canvasElement.width / 2,
         centerY     = canvasElement.height / 2,
@@ -130,10 +130,10 @@ $(function() {
 
       // Draw
       canvasElements.each(function () {
-
         // Check if player draws with X or with an Circle
         if (chosenElement == 'x') {
           drawX(this);
+          socket.emit('set_input');
         } else if (chosenElement == 'circle') {
           drawCircle(this);
         }
@@ -142,15 +142,13 @@ $(function() {
     })
   });
 
-    check_storage_supp();
-    function check_storage_supp() {
-        try {
-            return 'localStorage' in window && window['localStorage'] !== null;
-
-        } catch (e) {
-            alert('Bitte verwenden Sie einen neueren Browser');
-            return false;
-
-        }
-    }
+  check_storage_supp();
+  function check_storage_supp() {
+      try {
+          return 'localStorage' in window && window['localStorage'] !== null;
+      } catch (e) {
+          alert('Bitte verwenden Sie einen neueren Browser');
+          return false;
+      }
+  }
 });
