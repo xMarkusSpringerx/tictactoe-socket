@@ -78,7 +78,7 @@ io.on('connection', function (socket) {
                 // If exactly 1 room found --> perfect
                 if (result.length == 1) {
                     socket.join(data.nr); // put user in a channel
-                    io.sockets.in(data.nr).emit('connected');
+                    io.sockets.in(data.nr).emit('connected', {nr : data.nr});
                 } else {
                     // No room was found
                     socket.emit('no_connection');

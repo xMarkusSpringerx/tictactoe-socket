@@ -6,21 +6,31 @@ $(function() {
   var socket = io('http://localhost:3000');
   var chosenElement;
 
+  var actual_host_nr;
 
   //Hide it first
   $('.tic-tac-toe').hide();
   $('.game-mode').hide();
   $('#enter-connection-code').hide();
 
+
   socket.on('channel_nr', function(data){
     $('#connection-code').text(data.nr);
   });
 
-  socket.on('connected', function(){
+  socket.on('connected', function(data){
     console.log('erfolgreich connected');
+
+    actual_host_nr = data.nr;
+
+    // Set Actual Connection ID to session
+    localStorage.setItem("actual_host_nr", actual_host_nr);
+
     $('.tic-tac-toe').fadeIn();
     $('.game-mode').fadeOut();
   });
+
+
 
 
   socket.on('no_connection', function(){
@@ -132,4 +142,15 @@ $(function() {
     })
   });
 
+    check_storage_supp();
+    function check_storage_supp() {
+        try {
+            return 'localStorage' in window && window['localStorage'] !== null;
+
+        } catch (e) {
+            alert('Bitte verwenden Sie einen neueren Browser');
+            return false;
+
+        }
+    }
 });
