@@ -6,6 +6,8 @@ $(function() {
   var socket = io('http://localhost:3000');
   var chosenElement;
 
+  var opponentElement;
+
   var actual_host_nr;
 
   //Hide it first
@@ -48,13 +50,18 @@ $(function() {
     // Now generate Code
 
     chosenElement = "circle";
+    opponentElement = "x";
     socket.emit('new_host');
   });
 
 
-  socket.on('drawOpponent', function(){
-
+  socket.on('drawOpponent', function(data){
+    console.log(data.x);
+    console.log(data.y);
+    drawOpponent(data.x, data.y);
   });
+
+
 
   $('#enter').on('click', function(){
     // You get the Code and enter the game
@@ -68,9 +75,40 @@ $(function() {
     socket.emit('submit_connection_nr', {nr : connection_nr});
 
     chosenElement = "x";
+    opponentElement = "circle";
   });
 
 
+  function drawOpponent(x,y){
+    var draw_item = $('.single-item[data-x="'+x+'"][data-y="'+y+'"]');
+
+      var canvasElements = $(draw_item).find('canvas');
+
+      // Check if clicked Element is already chosen
+      if (! opponentElement) {
+          $('[data-chosen-element]').each(function () {
+              opponentElement = $(this).data('chosen-element');
+          });
+      }
+
+      // Get actual draw position
+      draw_x = $(this).attr('data-x');
+      draw_y = $(this).attr('data-y');
+
+      // Draw
+      canvasElements.each(function () {
+          // Check if player draws with X or with an Circle
+          if (opponentElement == 'x') {
+              drawX(this);
+              socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y});
+
+          } else if (opponentElement == 'circle') {
+              drawCircle(this);
+              socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y});
+          }
+      });
+
+  }
 
   drawCircle = function (canvasElement, options) {
     // TODO: Add defaults for data attribs
@@ -123,6 +161,7 @@ $(function() {
     });
 
     $('.single-item').on('click', function () {
+
       var canvasElements = $(this).find('canvas');
 
       // Check if clicked Element is already chosen
@@ -132,18 +171,25 @@ $(function() {
         });
       }
 
+      // Get actual draw position
+      draw_x = $(this).attr('data-x');
+      draw_y = $(this).attr('data-y');
+
       // Draw
       canvasElements.each(function () {
         // Check if player draws with X or with an Circle
         if (chosenElement == 'x') {
           drawX(this);
-          socket.emit('set_input', {nr : connection_nr});
+          socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y});
+
         } else if (chosenElement == 'circle') {
           drawCircle(this);
+          socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y});
         }
       });
 
-    })
+    });
+
   });
 
   check_storage_supp();
