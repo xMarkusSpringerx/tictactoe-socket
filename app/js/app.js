@@ -48,8 +48,12 @@ $(function() {
     // Now generate Code
 
     chosenElement = "circle";
-      
     socket.emit('new_host');
+  });
+
+
+  socket.on('drawOpponent', function(){
+
   });
 
   $('#enter').on('click', function(){
@@ -133,7 +137,7 @@ $(function() {
         // Check if player draws with X or with an Circle
         if (chosenElement == 'x') {
           drawX(this);
-          socket.emit('set_input');
+          socket.emit('set_input', {nr : connection_nr});
         } else if (chosenElement == 'circle') {
           drawCircle(this);
         }

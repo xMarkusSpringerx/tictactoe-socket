@@ -61,7 +61,6 @@ io.on('connection', function (socket) {
     });
 
     socket.emit('channel_nr', {nr : room_nr});
-
   });
 
 
@@ -89,8 +88,8 @@ io.on('connection', function (socket) {
         });
     });
 
-   socket.on('set_input', function(){
-    console.log('x gesetzt');
+   socket.on('set_input', function(data){
+    socket.broadcast.to(data.nr).emit('drawOpponent', {x: data.x, y:data.y});
    });
 
 
