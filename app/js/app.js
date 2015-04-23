@@ -3,33 +3,58 @@
 
 $(function() {
 
+  var socket = io('http://localhost:3000');
+  var chosenElement;
+
+
   //Hide it first
   $('.tic-tac-toe').hide();
   $('.game-mode').hide();
   $('#enter-connection-code').hide();
 
-  var chosenElement;
+  socket.on('channel_nr', function(data){
+    $('#connection-code').text(data.nr);
+  });
+
+  socket.on('connected', function(){
+    console.log('erfolgreich connected');
+    $('.tic-tac-toe').fadeIn();
+    $('.game-mode').fadeOut();
+  });
+
+
+  socket.on('no_connection', function(){
+    alert('keine Verbindung aufgebaut');
+  });
 
   $('#start-game').on('click', function(){
-
     $(this).hide();
     $('.game-mode').fadeIn();
   });
-
 
   $('#host').on('click', function(){
     // You are the Host of the Game
     $('#enter').hide();
     // Now generate Code
 
-    $('#connection-code').text('asdfasdf');
+    socket.emit('new_host');
+
+
   });
 
   $('#enter').on('click', function(){
     // You get the Code and enter the game
+
     $('#host').hide();
     $('#enter-connection-code').fadeIn();
   });
+
+  $('#btn-host-code').on('click', function(){
+    var connection_nr = $('#connection-host-code').val();
+    console.log('w', connection_nr, 'w');
+    socket.emit('submit_connection_nr', {nr : connection_nr});
+  });
+
 
 
   drawCircle = function (canvasElement, options) {
