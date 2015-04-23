@@ -2,9 +2,8 @@ var express = require('express'),
     app = express(),
     server = require('http').createServer(app),
     io = require('socket.io')(server),
-    connection;
-
-r = require('rethinkdb');
+    connection,
+    r = require('rethinkdb');
 
 r.connect({ host: 'localhost', port: 28015, db: 'tictactoe'}, function(err, conn) {
     // Can't connect to Server
