@@ -1,69 +1,57 @@
-var express = require('express');
-var app = express();
-var server = require('http').createServer(app);
-var io = require('socket.io')(server);
-
+var express = require('express'),
+    app = express(),
+    server = require('http').createServer(app),
+    io = require('socket.io')(server),
+    connection;
 
 r = require('rethinkdb');
-var connection = null;
 
-r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
-
-
+r.connect({ host: 'localhost', port: 28015, db: 'tictactoe'}, function(err, conn) {
     // Can't connect to Server
     if (err) throw err;
+
     connection = conn;
 
-
-    r.db('tictactoesocket').tableDrop('rooms').run(connection, function(){
-
-    });
-
-    // Create new table
-    r.db('tictactoesocket').tableCreate('rooms').run(connection, function(err, result) {
+    r.tableList().run(connection, function (err, list) {
         if (err) throw err;
-        console.log(JSON.stringify(result, null, 2));
+
+        if (list.indexOf('rooms') == -1) {
+            r.tableCreate('rooms').run(conn, function(err, result) {
+                if (err) throw err;
+
+                console.log('created table rooms');
+            });
+        }
     });
-
-    r.table("rooms").delete().run(connection);
-
-
-
 });
 
 server.listen(3000);
 
 app.use(express.static(__dirname + '/app'));
 
-
 // Send the client html.
 app.get('/', function(req, res) {
-     res.sendFile(__dirname + '/index.html')
+     res.sendFile(__dirname + '/index.html');
 });
-
 
 io.on('connection', function (socket) {
 
-  // If User is Host
-  socket.on('new_host', function(){
+    // If User is Host
+    socket.on('new_host', function() {
+        // Generate RandomChannelNr
+        var room_nr = Math.floor(Math.random()*10000000);
 
-    // Generate RandomChannelNr
-    var room_nr = Math.floor(Math.random()*10000000);
+        // put socket in a channel
+        socket.join(room_nr);
 
+        r.table("rooms").insert({
+            "room_id": String(room_nr)
+        }).run(connection, function(err) {
+            if (err) throw err;
+        });
 
-    socket.join(room_nr); // put socket in a channel
-
-
-    r.table("rooms").insert({
-        "room_id": String(room_nr)
-    }).run(connection, function(err, result) {
-        if (err) throw err;
+        socket.emit('channel_nr', {nr : room_nr});
     });
-
-    socket.emit('channel_nr', {nr : room_nr});
-  });
-
-
 
     // If User wants to enter a Room
     socket.on('submit_connection_nr', function(data){
@@ -88,9 +76,7 @@ io.on('connection', function (socket) {
         });
     });
 
-   socket.on('set_input', function(data){
-    socket.broadcast.to(data.nr).emit('drawOpponent', {x: data.x, y:data.y});
-   });
-
-
+    socket.on('set_input', function(data){
+        socket.broadcast.to(data.nr).emit('drawOpponent', {x: data.x, y:data.y});
+    });
 });
