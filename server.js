@@ -42,7 +42,6 @@ r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
         }
     }
 
-
 });
 
 server.listen(3000);
@@ -59,8 +58,7 @@ io.on('connection', function (socket) {
     // If User is Host
     socket.on('new_host', function() {
         // Generate RandomChannelNr
-        // TODO: Smaller channel number
-        var room_nr = Math.floor(Math.random()*10000000);
+        var room_nr = Math.floor(Math.random()*10000);
 
         // put socket in a channel
         socket.join(room_nr);
