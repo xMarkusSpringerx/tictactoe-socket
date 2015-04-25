@@ -158,20 +158,11 @@ $(function() {
 
       // Draw
       canvasElements.each(function () {
-        // Check if player draws with X or with an Circle
-        if (chosenElement == 'x') {
-          drawX(this);
-        } else if (chosenElement == 'circle') {
-          drawCircle(this);
-        }
-
-          console.log(chosenElement);
+        drawElement(this, chosenElement);
 
         socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y, element: chosenElement});
       });
-
     });
-
   });
 
   check_storage_supp();
