@@ -165,13 +165,14 @@ $(function() {
     });
   });
 
-  check_storage_supp();
   check_storage_supp = function () {
-      try {
-          return 'localStorage' in window && window['localStorage'] !== null;
-      } catch (e) {
-          alert('Bitte verwenden Sie einen neueren Browser');
-          return false;
-      }
-  }
+    try {
+      return 'localStorage' in window && window['localStorage'] !== null;
+    } catch (e) {
+      alert('Bitte verwenden Sie einen neueren Browser');
+      return false;
+    }
+  };
+
+  check_storage_supp();
 });
