@@ -1,6 +1,7 @@
 {
   "name": "tictactoe-socket",
   "dependencies": {
+    "bootstrap": "*",
     "jquery": "*",
     "hammerjs": "*"
   }
