@@ -5,13 +5,9 @@ var express = require('express'),
     connection,
     r = require('rethinkdb');
 
-
-
 r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
-
     // Can't connect to Server
     if (err) throw err;
-
 
     connection = conn;
 
@@ -41,7 +37,6 @@ r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
             });
         }
     }
-
 });
 
 server.listen(3000);
@@ -73,7 +68,7 @@ io.on('connection', function (socket) {
     });
 
     // If User wants to enter a Room
-    socket.on('submit_connection_nr', function(data){
+    socket.on('submit_connection_nr', function(data) {
         // Get all rooms with posted room_id
         r.table('rooms').filter({"room_id": data.nr}).run(connection, function(err, cursor) {
             if (err) throw err;
