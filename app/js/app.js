@@ -1,20 +1,15 @@
-
-
-
 $(function() {
 
-  var socket = io('http://localhost:3000');
-  var chosenElement;
-
-  var opponentElement;
-
-  var actual_host_nr;
+  var socket = io('http://localhost:3000'),
+      chosenElement,
+      opponentElement,
+      actual_host_nr;
 
   //Hide it first
+  // TODO: Hide Default in CSS
   $('.tic-tac-toe').hide();
   $('.game-mode').hide();
   $('#enter-connection-code').hide();
-
 
   socket.on('channel_nr', function(data){
     $('#connection-code').text(data.nr);
@@ -31,9 +26,6 @@ $(function() {
     $('.tic-tac-toe').fadeIn();
     $('.game-mode').fadeOut();
   });
-
-
-
 
   socket.on('no_connection', function(){
     alert('keine Verbindung aufgebaut');
@@ -56,11 +48,9 @@ $(function() {
 
 
   socket.on('drawOpponent', function(data){
-    console.log(data.x);
-    console.log(data.y);
-    drawOpponent(data.x, data.y);
+    console.log(data);
+    drawOpponent(data.x, data.y, data.element);
   });
-
 
 
   $('#enter').on('click', function(){
@@ -79,36 +69,27 @@ $(function() {
   });
 
 
-  function drawOpponent(x,y){
-    var draw_item = $('.single-item[data-x="'+x+'"][data-y="'+y+'"]');
+  drawOpponent = function (x, y, element) {
+    var draw_item = $('.single-item[data-x="'+x+'"][data-y="'+y+'"]'),
+        canvasElements = $(draw_item).find('canvas');
 
-      var canvasElements = $(draw_item).find('canvas');
+    // Get actual draw position
+    draw_x = $(this).attr('data-x');
+    draw_y = $(this).attr('data-y');
 
-      // Check if clicked Element is already chosen
-      if (! opponentElement) {
-          $('[data-chosen-element]').each(function () {
-              opponentElement = $(this).data('chosen-element');
-          });
-      }
+    // Draw
+    canvasElements.each(function () {
+        drawElement(this, element);
+    });
+  };
 
-      // Get actual draw position
-      draw_x = $(this).attr('data-x');
-      draw_y = $(this).attr('data-y');
-
-      // Draw
-      canvasElements.each(function () {
-          // Check if player draws with X or with an Circle
-          if (opponentElement == 'x') {
-              drawX(this);
-              socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y});
-
-          } else if (opponentElement == 'circle') {
-              drawCircle(this);
-              socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y});
-          }
-      });
-
-  }
+  drawElement = function (canvasElement, elementName, options) {
+    if (elementName == 'x') {
+      drawX(canvasElement, options);
+    } else if (elementName == 'circle') {
+      drawCircle(canvasElement, options);
+    }
+  };
 
   drawCircle = function (canvasElement, options) {
     // TODO: Add defaults for data attribs
@@ -180,12 +161,13 @@ $(function() {
         // Check if player draws with X or with an Circle
         if (chosenElement == 'x') {
           drawX(this);
-          socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y});
-
         } else if (chosenElement == 'circle') {
           drawCircle(this);
-          socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y});
         }
+
+          console.log(chosenElement);
+
+        socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y, element: chosenElement});
       });
 
     });
@@ -193,7 +175,7 @@ $(function() {
   });
 
   check_storage_supp();
-  function check_storage_supp() {
+  check_storage_supp = function () {
       try {
           return 'localStorage' in window && window['localStorage'] !== null;
       } catch (e) {

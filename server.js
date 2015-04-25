@@ -95,7 +95,7 @@ io.on('connection', function (socket) {
         });
     });
 
-    socket.on('set_input', function(data){
-        socket.broadcast.to(data.nr).emit('drawOpponent', {x: data.x, y:data.y});
+    socket.on('set_input', function (data) {
+        socket.broadcast.to(data.nr).emit('drawOpponent', data);
     });
 });
