@@ -1,6 +1,6 @@
 $(function() {
-
-  var socket = io('http://localhost:3000'),
+  var host = window.location.hostname,
+      socket = io('http://' + host + ':3000'),
       chosenElement,
       opponentElement,
       actual_host_nr;
