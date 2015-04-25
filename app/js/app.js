@@ -132,17 +132,7 @@ $(function() {
   };
 
   $(document).ready(function () {
-
-    $('[data-spy="circle"]').each(function () {
-      drawCircle(this);
-    });
-
-    $('[data-spy="x"]').each(function () {
-      drawX(this);
-    });
-
     $('.single-item').on('click', function () {
-
       var canvasElements = $(this).find('canvas');
 
       // Check if clicked Element is already chosen
