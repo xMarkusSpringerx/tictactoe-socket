@@ -73,10 +73,6 @@ $(function() {
     var draw_item = $('.single-item[data-x="'+x+'"][data-y="'+y+'"]'),
         canvasElements = $(draw_item).find('canvas');
 
-    // Get actual draw position
-    draw_x = $(this).attr('data-x');
-    draw_y = $(this).attr('data-y');
-
     // Draw
     canvasElements.each(function () {
         drawElement(this, element);
@@ -100,7 +96,6 @@ $(function() {
         borderColor = $(canvasElement).data('border-color'),
         lineWidth   = 2,
         radius      = centerY / 1.5;
-
 
     context.beginPath();
     context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
