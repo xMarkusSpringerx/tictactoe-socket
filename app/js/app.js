@@ -1,9 +1,9 @@
 $(function() {
   var host = window.location.hostname,
-      socket = io('http://' + host + ':3000'),
-      chosenElement,
-      opponentElement,
-      actual_host_nr;
+    socket = io('http://' + host + ':3000'),
+    chosenElement,
+    opponentElement,
+    processing_room;
 
   //Hide it first
   // TODO: Hide Default in CSS
@@ -11,16 +11,16 @@ $(function() {
   $('#enter-connection-code').hide();
 
   socket.on('channel_nr', function(data){
-    $('#connection-code').text(data.nr);
+    $('#connection-code').text(data.room);
   });
 
   socket.on('connected', function(data){
     console.log('erfolgreich connected');
 
-    actual_host_nr = data.nr;
+    processing_room = data.room;
 
     // Set Actual Connection ID to session
-    localStorage.setItem("actual_host_nr", actual_host_nr);
+    localStorage.setItem("processing_room", processing_room);
 
     $('.tic-tac-toe').fadeIn();
     $('#start-display').fadeOut();
@@ -52,7 +52,7 @@ $(function() {
   $('.btn-host-code').on('click', function(){
     var connection_nr = $('#connection-host-code').val();
     console.log('w', connection_nr, 'w');
-    socket.emit('submit_connection_nr', {nr : connection_nr});
+    socket.emit('submit_connection_nr', {room : connection_nr});
 
     chosenElement = "x";
     opponentElement = "circle";
@@ -134,8 +134,14 @@ $(function() {
       canvasElements.each(function () {
         drawElement(this, chosenElement);
 
-        socket.emit('set_input', {nr : actual_host_nr, x : draw_x, y : draw_y, element: chosenElement});
+        socket.emit('set_input', {
+          room : processing_room,
+          x : draw_x,
+          y : draw_y,
+          element: chosenElement
+        });
       });
+
     });
   });
 

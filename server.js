@@ -18,7 +18,7 @@ r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
 
   r.tableList().run(connection, function (err, list) {
       if (err) throw err;
-      checkTable(list, "users");
+      checkTable(list, "user");
       checkTable(list, "rooms");
   });
 
@@ -53,44 +53,55 @@ io.on('connection', function (socket) {
     // If User is Host
     socket.on('new_host', function() {
         // Generate RandomChannelNr
-        var room_nr = Math.floor(Math.random()*10000);
+      var room = Math.floor(Math.random()*10000);
 
-        // put socket in a channel
-        socket.join(room_nr);
+      r.table("user").insert({'type': 'host'}).run(connection, function (err, result) {
+        for (var i in result.generated_keys) {
+          user = result.generated_keys[i];
+          break;
+        }
 
-        r.table("rooms").insert({
-            "room_id": String(room_nr)
-        }).run(connection, function(err) {
-            if (err) throw err;
+        r.table('rooms').insert({
+          'number': String(room),
+          'host': String(user)
+        }).run(connection, function(err, result) {
+          if (err) throw err;
+
+          for (var i in result.generated_keys) {
+            // put socket in a channel
+            socket.join(result.generated_keys[i]);
+            console.log("user connected to room: " + result.generated_keys[i]);
+            break;
+          }
         });
+      });
 
-        socket.emit('channel_nr', {nr : room_nr});
+      socket.emit('channel_nr', {room : room});
     });
 
     // If User wants to enter a Room
     socket.on('submit_connection_nr', function(data) {
         // Get all rooms with posted room_id
-        r.table('rooms').filter({"room_id": data.nr}).run(connection, function(err, cursor) {
-            if (err) throw err;
+        r.table('rooms').filter({"number": data.room}).run(connection, function(err, cursor) {
+          if (err) throw err;
 
-            cursor.toArray(function(err, result) {
-                if (err) throw err;
+          cursor.next(function (err, row) {
+            if (err) {
+              socket.emit('no_connection');
+              throw err
+            }
 
-                console.log('Anzahl der Räume', result.length);
-
-                // If exactly 1 room found --> perfect
-                if (result.length == 1) {
-                    socket.join(data.nr); // put user in a channel
-                    io.sockets.in(data.nr).emit('connected', {nr : data.nr});
-                } else {
-                    // No room was found
-                    socket.emit('no_connection');
-                }
+            console.log("user connected to room: " + row.id);
+            // If exactly 1 room found --> perfect
+            socket.join(row.id); // put user in a channel
+            io.sockets.in(row.id).emit('connected', {
+              room : row.id
             });
+          });
         });
     });
 
     socket.on('set_input', function (data) {
-        socket.broadcast.to(data.nr).emit('drawOpponent', data);
+        socket.broadcast.to(data.room).emit('drawOpponent', data);
     });
 });
