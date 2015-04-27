@@ -8,7 +8,6 @@ $(function() {
   //Hide it first
   // TODO: Hide Default in CSS
   $('.tic-tac-toe').hide();
-  $('.game-mode').hide();
   $('#enter-connection-code').hide();
 
   socket.on('channel_nr', function(data){
@@ -24,42 +23,33 @@ $(function() {
     localStorage.setItem("actual_host_nr", actual_host_nr);
 
     $('.tic-tac-toe').fadeIn();
-    $('.game-mode').fadeOut();
+    $('#start-display').fadeOut();
   });
 
   socket.on('no_connection', function(){
     alert('keine Verbindung aufgebaut');
   });
 
-  $('#start-game').on('click', function(){
-    $(this).hide();
-    $('.game-mode').fadeIn();
-  });
-
   $('#host').on('click', function(){
     // You are the Host of the Game
     $('#enter').hide();
-    // Now generate Code
 
     chosenElement = "circle";
     opponentElement = "x";
     socket.emit('new_host');
   });
 
-
   socket.on('drawOpponent', function(data){
-    console.log(data);
     drawOpponent(data.x, data.y, data.element);
   });
 
-
   $('#enter').on('click', function(){
-    // You get the Code and enter the game
+    $(this).hide();
     $('#host').hide();
     $('#enter-connection-code').fadeIn();
   });
 
-  $('#btn-host-code').on('click', function(){
+  $('.btn-host-code').on('click', function(){
     var connection_nr = $('#connection-host-code').val();
     console.log('w', connection_nr, 'w');
     socket.emit('submit_connection_nr', {nr : connection_nr});
@@ -67,7 +57,6 @@ $(function() {
     chosenElement = "x";
     opponentElement = "circle";
   });
-
 
   drawOpponent = function (x, y, element) {
     var draw_item = $('.single-item[data-x="'+x+'"][data-y="'+y+'"]'),

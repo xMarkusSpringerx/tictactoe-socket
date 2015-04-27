@@ -3,3 +3,4 @@ node_modules
 app/bower
 .idea/
 rethinkdb_data/
+app/css

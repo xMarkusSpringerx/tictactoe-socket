@@ -1,6 +1,6 @@
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/tictactoe.min.css">
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/bower/jquery/dist/jquery.min.js"></script>
@@ -8,7 +8,7 @@
   </head>
 
   <body>
-    <div class="tic-tac-toe" data-chosen-element="x">
+    <div class="tic-tac-toe game" data-chosen-element="x">
       <div class="first-row row">
         <div data-x="1" data-y="1" class="single-item">1,1
           <canvas></canvas>
@@ -45,17 +45,16 @@
         </div>
       </div>
     </div>
-    <button id="start-game">Start</button>
 
-    <div class="game-mode">
-        <button id="host">Spiel erstellen</button>
-        <button id="enter">Spiel beitreten</button>
+    <div id="start-display">
+        <button id="host" class="btn btn-block btn-default">Spiel erstellen</button>
+        <button id="enter" class="btn btn-block btn-default">Spiel beitreten</button>
 
-        <div id="connection-code"></div>
+        <h1 id="connection-code" class="text-center"></h1>
 
         <div id="enter-connection-code">
-            <input id="connection-host-code" type="text" placeholder="Connection Code from your host" />
-            <button id="btn-host-code">Miteinander verbinden</button>
+            <input type="text" id="connection-host-code"  class="form-control" placeholder="Connection Code">
+            <button class="btn btn-default btn-block btn-host-code">Miteinander verbinden</button>
         </div>
     </div>
   </body>
