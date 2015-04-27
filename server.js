@@ -12,9 +12,10 @@ r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
   connection = conn;
 
   // Create Datebase for first init
-  r.dbCreate('tictactoe').run(conn, function(err) {});
+  r.dbCreate('tictactoe').run(connection, function(err) {});
 
-  conn.use('tictactoe');
+  // Map db to connection
+  connection.use('tictactoe');
 
   r.tableList().run(connection, function (err, list) {
       if (err) throw err;
