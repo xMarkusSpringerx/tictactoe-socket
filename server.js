@@ -6,37 +6,37 @@ var express = require('express'),
     r = require('rethinkdb');
 
 r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
-    // Can't connect to Server
-    if (err) throw err;
+  // Can't connect to Server
+  if (err) throw err;
 
-    connection = conn;
+  connection = conn;
 
-    // Create Datebase for first init
-    r.dbCreate('tictactoe').run(conn, function(err){
-        //console.log(err.message);
-    });
+  // Create Datebase for first init
+  r.dbCreate('tictactoe').run(conn, function(err) {});
 
-    r.tableList().run(connection, function (err, list) {
-        if (err) throw err;
-        checkTable(list, "users");
-        checkTable(list, "rooms");
-    });
+  conn.use('tictactoe');
 
-    // Check if table exists
-    function checkTable(list, tablename){
-        if (list.indexOf(tablename) == -1) {
-            r.tableCreate(tablename).run(conn, function(err, result) {
-                if (err) throw err;
-                console.log('created table ', tablename);
-            });
-        } else {
-            // For testing:
-            // Delete all Entries on startup
-            r.table(tablename).delete().run(conn, function(){
-                console.log('deleted all entries in ', tablename);
-            });
-        }
-    }
+  r.tableList().run(connection, function (err, list) {
+      if (err) throw err;
+      checkTable(list, "users");
+      checkTable(list, "rooms");
+  });
+
+  // Check if table exists
+  function checkTable(list, tablename){
+      if (list.indexOf(tablename) == -1) {
+          r.tableCreate(tablename).run(conn, function(err, result) {
+              if (err) throw err;
+              console.log('created table ', tablename);
+          });
+      } else {
+          // For testing:
+          // Delete all Entries on startup
+          r.table(tablename).delete().run(conn, function(){
+              console.log('deleted all entries in ', tablename);
+          });
+      }
+  }
 });
 
 server.listen(3000);
