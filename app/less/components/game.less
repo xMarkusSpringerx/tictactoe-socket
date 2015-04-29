@@ -23,8 +23,12 @@
 }
 
 #start-display {
-    width: 50%;
+    width: 90%;
     margin: 20% auto 0 auto;
+
+    @media (min-width: @screen-xs-max) {
+        width: 50%;
+    }
 
     .btn-host-code {
         margin-top: @padding-base-vertical;
