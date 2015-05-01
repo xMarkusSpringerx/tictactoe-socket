@@ -34,7 +34,7 @@ Now add your options in the ansible user_management [default file][3]
 ansible/roles/user_management/defaults/main.yml
 ```
 
-To generate your pass follow the this [introduction][2].
+To generate your pass follow this [introduction][2].
 
 ### Run ansible
 
