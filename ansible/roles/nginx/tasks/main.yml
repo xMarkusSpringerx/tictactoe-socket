@@ -1,0 +1,8 @@
+---
+- name: Install nginx
+  apt: pkg=nginx state=installed update_cache=yes cache_valid_time=86400
+  notify: Restart nginx
+
+- name: Disable the default vhost
+  file: path=/etc/nginx/sites-enabled/default state=absent
+  notify: Reload nginx

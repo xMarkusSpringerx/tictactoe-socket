@@ -1,0 +1,24 @@
+---
+- name: Remove groups for locked user(s)
+  user:
+    name: "{{ item }}"
+    groups: ""
+  with_items: user_management_locked_users
+  when: user_management_locked_users is defined
+
+- name: Disable password for locked user(s)
+  user:
+    name: "{{ item }}"
+    password: !
+  with_items: user_management_locked_users
+  when: user_management_locked_users is defined
+
+- name: Remove authorized key(s) for locked users
+  authorized_key:
+    user: "{{ item.0.username }}"
+    key: "{{ lookup('file', user_management_ssh_keys_path ~ item.1 ~ '.pub' ) }}"
+    state: absent
+  with_subelements:
+    - user_management_users
+    - public_keys
+  when: (user_management_locked_users is defined) and (item.0.username in user_management_locked_users)

@@ -1,0 +1,13 @@
+---
+PLAYBOOK_ASSETS_PATH: "{{ playbook_dir }}/assets"
+user_management_ssh_keys_path: "{{ PLAYBOOK_ASSETS_PATH }}/user_management/ssh_keys/"
+
+user_management_users:
+  - username: dazorni
+    name: Sebastian Zorn
+    password: "$6$rounds=100000$IXKyWk1Bb9cSbnge$uGOpPUqMJX6fIQAckADvGsZEQ35z5aTxvda.ZRUIFjasPRl7M/ecffJhL3tl3Syk.aFIiUMOM0e.CqGS2t1ge."
+    groups: [ sudo ]
+    public_keys: [ dazorni ]
+    old_public_keys: []
+
+user_management_active_users: []

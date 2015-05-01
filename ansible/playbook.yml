@@ -1,0 +1,10 @@
+---
+- hosts: all
+  sudo: yes
+  user: root
+
+  roles:
+    - user_management
+    - nginx
+    - git
+    - node

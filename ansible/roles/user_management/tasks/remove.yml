@@ -1,0 +1,18 @@
+---
+- name: Remove user(s)
+  user:
+    name: "{{ item }}"
+    remove: yes
+    state: absent
+  with_items: user_management_removed_users
+  when: user_management_removed_users is defined
+
+- name: Remove old authorized_key(s) from active users
+  authorized_key:
+    user: "{{ item.0.username }}"
+    key: "{{ lookup('file', user_management_ssh_keys_path ~ item.1 ~ '.pub' ) }}"
+    state: absent
+  with_subelements:
+    - user_management_users
+    - old_public_keys
+  when: item.0.username in user_management_active_users

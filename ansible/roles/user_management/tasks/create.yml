@@ -1,0 +1,27 @@
+---
+- name: Create user(s)
+  user:
+    name: "{{ item.username }}"
+    comment: "{{ item.name }}"
+    password: "{{ item.password }}"
+    shell: /bin/bash
+  with_items: user_management_users
+  when: item.username in user_management_active_users
+
+- name: Setup authorized key(s)
+  authorized_key:
+    user: "{{ item.0.username }}"
+    key: "{{ lookup('file', user_management_ssh_keys_path ~ item.1 ~ '.pub' ) }}"
+  with_subelements:
+    - user_management_users
+    - public_keys
+  when: item.0.username in user_management_active_users
+
+- name: Setup groups for users
+  user:
+    name: "{{ item.username }}"
+    group: "{{ item.username }}"
+    groups: "{{ item.groups|join(',') }}"
+    append: "{{ 'yes' if item.groups else 'no' }}"
+  with_items: user_management_users
+  when: item.username in user_management_active_users
