@@ -30,6 +30,7 @@ $(function() {
     // Set Actual Connection ID to session
     localStorage.setItem("processing_room", data.room);
     localStorage.setItem("processing_room_number", data.room_number);
+
     $('.tic-tac-toe').fadeIn();
     $('#start-display').fadeOut();
   });
@@ -149,13 +150,13 @@ $(function() {
           draw_x = act_click_obj.attr('data-x');
           draw_y = act_click_obj.attr('data-y');
 
-
           // Draw
           canvasElements.each(function () {
               drawElement(this, chosenElement);
 
               socket.emit('set_input', {
                   room : localStorage.getItem('processing_room'),
+                  room_number : localStorage.getItem('processing_room_number'),
                   x : draw_x,
                   y : draw_y,
                   element: chosenElement

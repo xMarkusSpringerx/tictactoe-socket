@@ -21,6 +21,7 @@ r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
       if (err) throw err;
       checkTable(list, "user");
       checkTable(list, "rooms");
+      checkTable(list, "turns");
   });
 
   // Check if table exists
@@ -107,6 +108,16 @@ io.on('connection', function (socket) {
     });
 
     socket.on('set_input', function (data) {
+
+        r.table('turns').insert({
+            'room_number': String(data.room_number),
+            'x': String(data.x),
+            'y': String(data.y),
+            'element': String(data.element)
+        }).run(connection, function(err, result) {
+            if (err) throw err;
+        });
+
         socket.broadcast.to(data.room).emit('drawOpponent', data);
     });
 
@@ -127,7 +138,7 @@ io.on('connection', function (socket) {
                     // Opponent is drawing
                     r.table("rooms").filter({number: room_number}).update({turn_user_id: user_id}).run(connection, function(err, cursor){
                         if (err) throw err;
-                        console.log('Nächster Zug');
+                        console.log('Room geupdated');
                     });
 
                     socket.emit('allow_drawing',{permission:true});
