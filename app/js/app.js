@@ -2,8 +2,15 @@ $(function() {
   var host = window.location.hostname,
     socket = io('http://' + host + ':3000'),
     chosenElement,
-    opponentElement,
-    processing_room;
+    opponentElement
+
+  // Set UserId to Local Storage
+  generateUserId = function(){
+    user_id = Math.floor(Math.random()*10000);
+    localStorage.setItem('user_id', user_id);
+  };
+    
+  generateUserId();
 
   //Hide it first
   // TODO: Hide Default in CSS
@@ -17,10 +24,9 @@ $(function() {
   socket.on('connected', function(data){
     console.log('erfolgreich connected');
 
-    processing_room = data.room;
 
     // Set Actual Connection ID to session
-    localStorage.setItem("processing_room", processing_room);
+    localStorage.setItem("processing_room", data.room);
 
     $('.tic-tac-toe').fadeIn();
     $('#start-display').fadeOut();
@@ -30,13 +36,15 @@ $(function() {
     alert('keine Verbindung aufgebaut');
   });
 
+
+
   $('#host').on('click', function(){
     // You are the Host of the Game
     $('#enter').hide();
 
     chosenElement = "circle";
     opponentElement = "x";
-    socket.emit('new_host');
+    socket.emit('new_host', {user_id : localStorage.getItem('user_id')});
   });
 
   socket.on('drawOpponent', function(data){
@@ -135,7 +143,7 @@ $(function() {
         drawElement(this, chosenElement);
 
         socket.emit('set_input', {
-          room : processing_room,
+          room : localStorage.getItem('processing_room'),
           x : draw_x,
           y : draw_y,
           element: chosenElement

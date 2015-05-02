@@ -52,30 +52,24 @@ app.get('/', function(req, res) {
 io.on('connection', function (socket) {
 
     // If User is Host
-    socket.on('new_host', function() {
+    socket.on('new_host', function(data) {
         // Generate RandomChannelNr
       var room = Math.floor(Math.random()*10000);
 
-      r.table("user").insert({'type': 'host'}).run(connection, function (err, result) {
-        for (var i in result.generated_keys) {
-          user = result.generated_keys[i];
-          break;
-        }
-
         r.table('rooms').insert({
           'number': String(room),
-          'host': String(user)
+          'host': String(data.user_id),
+          'player2': String('')
         }).run(connection, function(err, result) {
           if (err) throw err;
 
-          for (var i in result.generated_keys) {
+          for(var i in result.generated_keys) {
             // put socket in a channel
             socket.join(result.generated_keys[i]);
             console.log("user connected to room: " + result.generated_keys[i]);
             break;
           }
         });
-      });
 
       socket.emit('channel_nr', {room : room});
     });
