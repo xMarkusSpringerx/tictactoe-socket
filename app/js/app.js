@@ -24,7 +24,6 @@ $(function() {
   socket.on('connected', function(data){
     console.log('erfolgreich connected');
 
-
     // Set Actual Connection ID to session
     localStorage.setItem("processing_room", data.room);
 
@@ -45,6 +44,7 @@ $(function() {
     chosenElement = "circle";
     opponentElement = "x";
     socket.emit('new_host', {user_id : localStorage.getItem('user_id')});
+
   });
 
   socket.on('drawOpponent', function(data){
@@ -60,7 +60,7 @@ $(function() {
   $('.btn-host-code').on('click', function(){
     var connection_nr = $('#connection-host-code').val();
     console.log('w', connection_nr, 'w');
-    socket.emit('submit_connection_nr', {room : connection_nr});
+    socket.emit('submit_connection_nr', {room : connection_nr, player2 : localStorage.getItem('user_id')});
 
     chosenElement = "x";
     opponentElement = "circle";

@@ -89,6 +89,13 @@ io.on('connection', function (socket) {
             console.log("user connected to room: " + row.id);
             // If exactly 1 room found --> perfect
             socket.join(row.id); // put user in a channel
+
+            r.table("rooms").filter({number: data.room}).update({player2: data.player2}).run(connection, function(err, cursor){
+                if (err) throw err;
+                console.log('Room geupdated');
+            });
+
+
             io.sockets.in(row.id).emit('connected', {
               room : row.id
             });
