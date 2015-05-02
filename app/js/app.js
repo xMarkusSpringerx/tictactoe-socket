@@ -1,8 +1,12 @@
 $(function() {
+
+  // localStorage.getItem('processing_room')
+  // localStorage.getItem('user_id')
   var host = window.location.hostname,
     socket = io('http://' + host + ':3000'),
     chosenElement,
-    opponentElement
+    act_click_obj,
+    opponentElement;
 
   // Set UserId to Local Storage
   generateUserId = function(){
@@ -23,10 +27,9 @@ $(function() {
 
   socket.on('connected', function(data){
     console.log('erfolgreich connected');
-
     // Set Actual Connection ID to session
     localStorage.setItem("processing_room", data.room);
-
+    localStorage.setItem("processing_room_number", data.room_number);
     $('.tic-tac-toe').fadeIn();
     $('#start-display').fadeOut();
   });
@@ -34,8 +37,6 @@ $(function() {
   socket.on('no_connection', function(){
     alert('keine Verbindung aufgebaut');
   });
-
-
 
   $('#host').on('click', function(){
     // You are the Host of the Game
@@ -125,31 +126,44 @@ $(function() {
 
   $(document).ready(function () {
     $('.single-item').on('click', function () {
-      var canvasElements = $(this).find('canvas');
+      act_click_obj = $(this);
 
-      // Check if clicked Element is already chosen
-      if (! chosenElement) {
-        $('[data-chosen-element]').each(function () {
-            chosenElement = $(this).data('chosen-element');
-        });
+      socket.emit('ask_for_drawing', {room_number: localStorage.getItem('processing_room_number'), user_id:localStorage.getItem('user_id')});
+
+    });
+
+    socket.on('allow_drawing', function(data){
+
+      if (data.permission == true) {
+
+          var canvasElements = act_click_obj.find('canvas');
+
+          // Check if clicked Element is already chosen
+          if (! chosenElement) {
+              $('[data-chosen-element]').each(function () {
+                  chosenElement = act_click_obj.data('chosen-element');
+              });
+          }
+
+          // Get actual draw position
+          draw_x = act_click_obj.attr('data-x');
+          draw_y = act_click_obj.attr('data-y');
+
+
+          // Draw
+          canvasElements.each(function () {
+              drawElement(this, chosenElement);
+
+              socket.emit('set_input', {
+                  room : localStorage.getItem('processing_room'),
+                  x : draw_x,
+                  y : draw_y,
+                  element: chosenElement
+              });
+          });
+      } else {
+          console.log('Der Gegner ist erst an der Reihe');
       }
-
-      // Get actual draw position
-      draw_x = $(this).attr('data-x');
-      draw_y = $(this).attr('data-y');
-
-      // Draw
-      canvasElements.each(function () {
-        drawElement(this, chosenElement);
-
-        socket.emit('set_input', {
-          room : localStorage.getItem('processing_room'),
-          x : draw_x,
-          y : draw_y,
-          element: chosenElement
-        });
-      });
-
     });
   });
 

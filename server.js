@@ -59,7 +59,9 @@ io.on('connection', function (socket) {
         r.table('rooms').insert({
           'number': String(room),
           'host': String(data.user_id),
-          'player2': String('')
+          'player2': String(''),
+          'turn_user_id': String('')
+
         }).run(connection, function(err, result) {
           if (err) throw err;
 
@@ -90,14 +92,15 @@ io.on('connection', function (socket) {
             // If exactly 1 room found --> perfect
             socket.join(row.id); // put user in a channel
 
-            r.table("rooms").filter({number: data.room}).update({player2: data.player2}).run(connection, function(err, cursor){
+            // Set Player2 to actual Room
+            r.table("rooms").filter({number: data.room}).update({player2: data.player2, turn_user_id : data.player2}).run(connection, function(err, cursor){
                 if (err) throw err;
                 console.log('Room geupdated');
             });
 
-
             io.sockets.in(row.id).emit('connected', {
-              room : row.id
+              room : row.id,
+              room_number : row.number
             });
           });
         });
@@ -106,4 +109,36 @@ io.on('connection', function (socket) {
     socket.on('set_input', function (data) {
         socket.broadcast.to(data.room).emit('drawOpponent', data);
     });
+
+
+    socket.on('ask_for_drawing', function(data){
+        user_id = data.user_id;
+        room_number = data.room_number;
+        console.log(data.user_id);
+
+        r.table('rooms').filter({"number": room_number}).run(connection, function(err, cursor) {
+            cursor.next(function (err, row) {
+
+                console.log('Turn ', row.turn_user_id, ' Act: ', user_id);
+                if(row.turn_user_id == user_id){
+                    // Aktueller User möchte erneut einen Eintrag machen -> darf nicht sein
+                    socket.emit('allow_drawing',{permission:false});
+                } else {
+                    // Opponent is drawing
+                    r.table("rooms").filter({number: room_number}).update({turn_user_id: user_id}).run(connection, function(err, cursor){
+                        if (err) throw err;
+                        console.log('Nächster Zug');
+                    });
+
+                    socket.emit('allow_drawing',{permission:true});
+
+
+                }
+            });
+        });
+
+
+
+    });
+
 });
