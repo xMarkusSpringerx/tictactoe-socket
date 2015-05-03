@@ -39,6 +39,7 @@ r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
           });
       }
   }
+
 });
 
 server.listen(3000);
@@ -51,6 +52,7 @@ app.get('/', function(req, res) {
 });
 
 io.on('connection', function (socket) {
+
 
     // If User is Host
     socket.on('new_host', function(data) {
@@ -109,46 +111,60 @@ io.on('connection', function (socket) {
 
     socket.on('set_input', function (data) {
 
-        r.table('turns').insert({
-            'room_number': String(data.room_number),
-            'x': String(data.x),
-            'y': String(data.y),
-            'element': String(data.element)
-        }).run(connection, function(err, result) {
-            if (err) throw err;
+        // data (room_number, x, y, element)
+
+        r.table('turns').filter({"room_number": data.room_number, "x" : data.x, "y" : data.y}).count().run(connection, function(err, cursor) {
+            // If entry not exists.
+            if(cursor == 0){
+                // If valid input
+                r.table('turns').insert({
+                    'room_number': String(data.room_number),
+                    'x': String(data.x),
+                    'y': String(data.y),
+                    'element': String(data.element)
+                }).run(connection, function(err, result) {
+                    if (err) throw err;
+                });
+                socket.broadcast.to(data.room).emit('drawOpponent', data);
+            } else {
+                console.log('Input schon vorhanden');
+            }
         });
 
-        socket.broadcast.to(data.room).emit('drawOpponent', data);
+
     });
 
 
     socket.on('ask_for_drawing', function(data){
         user_id = data.user_id;
         room_number = data.room_number;
-        console.log(data.user_id);
 
-        r.table('rooms').filter({"number": room_number}).run(connection, function(err, cursor) {
-            cursor.next(function (err, row) {
+        r.table('turns').filter({"room_number": room_number, "x" : data.x, "y" : data.y}).count().run(connection, function(err, cursor) {
+            // If entry not exists.
+            if(cursor == 0){
+                r.table('rooms').filter({"number": room_number}).run(connection, function(err, cursor) {
+                    cursor.next(function (err, row) {
 
-                console.log('Turn ', row.turn_user_id, ' Act: ', user_id);
-                if(row.turn_user_id == user_id){
-                    // Aktueller User möchte erneut einen Eintrag machen -> darf nicht sein
-                    socket.emit('allow_drawing',{permission:false});
-                } else {
-                    // Opponent is drawing
-                    r.table("rooms").filter({number: room_number}).update({turn_user_id: user_id}).run(connection, function(err, cursor){
-                        if (err) throw err;
-                        console.log('Room geupdated');
+                        if(row.turn_user_id == user_id){
+                            // Aktueller User möchte erneut einen Eintrag machen -> darf nicht sein
+                            socket.emit('allow_drawing',{permission:false});
+                        } else {
+                            // Opponent is drawing
+                            r.table("rooms").filter({number: room_number}).update({turn_user_id: user_id}).run(connection, function(err, cursor){
+                                if (err) throw err;
+                                console.log('Room geupdated');
+                            });
+
+                            socket.emit('allow_drawing',{permission:true});
+
+
+                        }
                     });
-
-                    socket.emit('allow_drawing',{permission:true});
-
-
-                }
-            });
+                });
+            } else {
+                console.log('Input schon vorhanden');
+            }
         });
-
-
 
     });
 

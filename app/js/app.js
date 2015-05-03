@@ -6,6 +6,12 @@ $(function() {
     socket = io('http://' + host + ':3000'),
     chosenElement,
     act_click_obj,
+
+    // Actual Draw Position
+    draw_x,
+    draw_y,
+
+    // Circle or X
     opponentElement;
 
   // Set UserId to Local Storage
@@ -129,7 +135,15 @@ $(function() {
     $('.single-item').on('click', function () {
       act_click_obj = $(this);
 
-      socket.emit('ask_for_drawing', {room_number: localStorage.getItem('processing_room_number'), user_id:localStorage.getItem('user_id')});
+      draw_x = act_click_obj.attr('data-x');
+      draw_y = act_click_obj.attr('data-y');
+
+      socket.emit('ask_for_drawing', {
+          room_number: localStorage.getItem('processing_room_number'),
+          user_id:localStorage.getItem('user_id'),
+          x : act_click_obj.attr('data-x'),
+          y : act_click_obj.attr('data-y')
+      });
 
     });
 
@@ -139,16 +153,6 @@ $(function() {
 
           var canvasElements = act_click_obj.find('canvas');
 
-          // Check if clicked Element is already chosen
-          if (! chosenElement) {
-              $('[data-chosen-element]').each(function () {
-                  chosenElement = act_click_obj.data('chosen-element');
-              });
-          }
-
-          // Get actual draw position
-          draw_x = act_click_obj.attr('data-x');
-          draw_y = act_click_obj.attr('data-y');
 
           // Draw
           canvasElements.each(function () {
