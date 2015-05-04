@@ -1,0 +1,9 @@
+---
+
+- name: Checkout tic tac toe repo
+  git: repo=git@github.com:xMarkusSpringerx/tictactoe-socket.git
+       dest={{ item.dest }}
+       version={{ item.version|default('HEAD') }}
+       accept_hostkey=true
+  with_items: application
+

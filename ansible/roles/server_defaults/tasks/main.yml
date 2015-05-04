@@ -1,0 +1,3 @@
+---
+- name: Add ansible user
+  user: name={{ user }} group=sudoers

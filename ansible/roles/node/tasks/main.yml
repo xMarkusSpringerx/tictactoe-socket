@@ -1,6 +1,12 @@
 ---
+- name: Install node
+  apt: pkg=node state=installed update_cache=yes cache_valid_time=86400
+
 - name: Install nodejs
   apt: pkg=nodejs state=installed update_cache=yes cache_valid_time=86400
 
 - name: Install npm
   apt: pkg=npm state=installed update_cache=yes cache_valid_time=86400
+
+- name: Install build-essential
+  apt: pkg=build-essential state=installed update_cache=yes cache_valid_time=86400

@@ -1,4 +1,6 @@
 ---
-
 user_management_active_users:
     - dazorni
+
+application:
+    - { dest: /var/www/tictactoe }

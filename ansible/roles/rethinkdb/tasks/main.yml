@@ -1,0 +1,9 @@
+---
+- name: Install RethinkDB APT Repo
+  apt_repository: repo="deb http://download.rethinkdb.com/apt trusty main" state=present
+
+- name: Update APT
+  apt: update_cache=yes upgrade=safe cache_valid_time=3600
+
+- name: Install rethinkdb
+  apt: pkg=rethinkdb state=installed update_cache=yes cache_valid_time=86400
