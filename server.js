@@ -53,6 +53,23 @@ app.get('/', function(req, res) {
 
 io.on('connection', function (socket) {
 
+    function getScore(x, y){
+        x = parseInt(x);
+        y = parseInt(y);
+        return Math.pow(2, ((x-1)*3 + (y-1)));
+    }
+
+    function checkForWin(score){
+        wins = [7, 56, 448, 73, 146, 292, 273, 84];
+
+        for (var i = 0; i < wins.length; i += 1) {
+            if ((wins[i] & score) === wins[i]) {
+                return true;
+            }
+        }
+        return false;
+
+    }
 
     // If User is Host
     socket.on('new_host', function(data) {
@@ -121,19 +138,49 @@ io.on('connection', function (socket) {
                     'room_number': String(data.room_number),
                     'x': String(data.x),
                     'y': String(data.y),
-                    'element': String(data.element)
+                    'element': String(data.element),
+                    'user_id': String(data.user_id)
                 }).run(connection, function(err, result) {
                     if (err) throw err;
                 });
-                socket.broadcast.to(data.room).emit('drawOpponent', data);
+
+                socket.broadcast.to(data.room_id).emit('drawOpponent', data);
+
+
+
+                r.table('turns').filter({"room_number": room_number, "user_id" : user_id}).run(connection, function(err, cursor) {
+
+                    score = 0;
+
+                    if (err) throw err;
+                    cursor.each(function(err, row) {
+                        if (err) throw err;
+
+                        /*
+                        1 | 2 | 4
+                        ---------
+                        8 |16 |32
+                        ---------
+                        64|128|256
+                        ---------
+                        */
+                        score = score + getScore(row.x, row.y);
+                    });
+
+                    if (checkForWin(score) == true) {
+                        io.sockets.in(data.room_id).emit('wins', {player: user_id});
+                    }
+
+                });
+
+
+
+
             } else {
                 console.log('Input schon vorhanden');
             }
         });
-
-
     });
-
 
     socket.on('ask_for_drawing', function(data){
         user_id = data.user_id;
@@ -156,7 +203,6 @@ io.on('connection', function (socket) {
                             });
 
                             socket.emit('allow_drawing',{permission:true});
-
 
                         }
                     });

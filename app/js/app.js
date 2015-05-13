@@ -10,6 +10,7 @@ $(function() {
     // Actual Draw Position
     draw_x,
     draw_y,
+    draw_value,
 
     // Circle or X
     opponentElement;
@@ -18,6 +19,8 @@ $(function() {
   generateUserId = function(){
     user_id = Math.floor(Math.random()*10000);
     localStorage.setItem('user_id', user_id);
+
+    $('#user_id').text(user_id);
   };
     
   generateUserId();
@@ -73,6 +76,13 @@ $(function() {
     chosenElement = "x";
     opponentElement = "circle";
   });
+
+
+
+  socket.on('wins', function(data){
+    alert(data.player + ' wins');
+  });
+
 
   drawOpponent = function (x, y, element) {
     var draw_item = $('.single-item[data-x="'+x+'"][data-y="'+y+'"]'),
@@ -137,6 +147,7 @@ $(function() {
 
       draw_x = act_click_obj.attr('data-x');
       draw_y = act_click_obj.attr('data-y');
+      draw_value = act_click_obj.attr('data-value');
 
       socket.emit('ask_for_drawing', {
           room_number: localStorage.getItem('processing_room_number'),
@@ -159,11 +170,13 @@ $(function() {
               drawElement(this, chosenElement);
 
               socket.emit('set_input', {
-                  room : localStorage.getItem('processing_room'),
+                  room_id : localStorage.getItem('processing_room'),
                   room_number : localStorage.getItem('processing_room_number'),
                   x : draw_x,
                   y : draw_y,
-                  element: chosenElement
+                  element: chosenElement,
+                  user_id : localStorage.getItem('user_id'),
+                  draw_value : draw_value
               });
           });
       } else {
