@@ -9,8 +9,7 @@ $(function() {
 
     // Actual Draw Position
     draw_x,
-    draw_y,
-    draw_value,
+    draw_y
 
     // Circle or X
     opponentElement;
@@ -147,7 +146,6 @@ $(function() {
 
       draw_x = act_click_obj.attr('data-x');
       draw_y = act_click_obj.attr('data-y');
-      draw_value = act_click_obj.attr('data-value');
 
       socket.emit('ask_for_drawing', {
           room_number: localStorage.getItem('processing_room_number'),
@@ -175,8 +173,7 @@ $(function() {
                   x : draw_x,
                   y : draw_y,
                   element: chosenElement,
-                  user_id : localStorage.getItem('user_id'),
-                  draw_value : draw_value
+                  user_id : localStorage.getItem('user_id')
               });
           });
       } else {
