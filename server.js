@@ -81,7 +81,6 @@ io.on('connection', function (socket) {
           'host': String(data.user_id),
           'player2': String(''),
           'turn_user_id': String('')
-
         }).run(connection, function(err, result) {
           if (err) throw err;
 
@@ -146,9 +145,7 @@ io.on('connection', function (socket) {
 
                 socket.broadcast.to(data.room_id).emit('drawOpponent', data);
 
-
-
-                r.table('turns').filter({"room_number": room_number, "user_id" : user_id}).run(connection, function(err, cursor) {
+                r.table('turns').filter({"room_number": data.room_number, "user_id" : data.user_id}).run(connection, function(err, cursor) {
 
                     score = 0;
 
@@ -165,9 +162,15 @@ io.on('connection', function (socket) {
                         ---------
                         */
                         score = score + getScore(row.x, row.y);
+
+
                     });
 
+
+                    console.log('Score: ', score);
+
                     if (checkForWin(score) == true) {
+
                         io.sockets.in(data.room_id).emit('wins', {player: user_id});
                     }
 

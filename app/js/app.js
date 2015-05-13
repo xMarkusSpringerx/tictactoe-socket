@@ -9,7 +9,7 @@ $(function() {
 
     // Actual Draw Position
     draw_x,
-    draw_y
+    draw_y,
 
     // Circle or X
     opponentElement;
@@ -80,6 +80,7 @@ $(function() {
 
   socket.on('wins', function(data){
     alert(data.player + ' wins');
+
   });
 
 
