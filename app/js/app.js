@@ -24,8 +24,10 @@ $(function() {
     
   generateUserId();
 
+
   //Hide it first
   // TODO: Hide Default in CSS
+  $('#restart').hide();
   $('.tic-tac-toe').hide();
   $('#enter-connection-code').hide();
 
@@ -33,11 +35,31 @@ $(function() {
     $('#connection-code').text(data.room);
   });
 
+  socket.on('setActualTurnUserId', function(data){
+
+    if(data.user_id == localStorage.getItem('user_id')){
+        $('#turn').text('Du bist dran');
+    } else {
+        $('#turn').text('Dein Gegner ist dran');
+    }
+  });
+
   socket.on('connected', function(data){
+
     console.log('erfolgreich connected');
     // Set Actual Connection ID to session
     localStorage.setItem("processing_room", data.room);
     localStorage.setItem("processing_room_number", data.room_number);
+
+    console.log(localStorage.getItem("user_id"));
+
+    if(localStorage.getItem("user_id") == data.player1) {
+        opponent_id = data.player2;
+    } else if(localStorage.getItem("user_id") == data.player2) {
+        opponent_id = data.player1;
+    }
+
+    localStorage.setItem("opponent_id", opponent_id);
 
     $('.tic-tac-toe').fadeIn();
     $('#start-display').fadeOut();
@@ -50,7 +72,6 @@ $(function() {
   $('#host').on('click', function(){
     // You are the Host of the Game
     $('#enter').hide();
-
     chosenElement = "circle";
     opponentElement = "x";
     socket.emit('new_host', {user_id : localStorage.getItem('user_id')});
@@ -67,32 +88,66 @@ $(function() {
     $('#enter-connection-code').fadeIn();
   });
 
+
+
   $('.btn-host-code').on('click', function(){
     var connection_nr = $('#connection-host-code').val();
     console.log('w', connection_nr, 'w');
     socket.emit('submit_connection_nr', {room : connection_nr, player2 : localStorage.getItem('user_id')});
 
+
     chosenElement = "x";
     opponentElement = "circle";
   });
 
-
-
   socket.on('wins', function(data){
-    alert(data.player + ' wins');
+    if(localStorage.getItem("user_id") == data.player) {
+        text = 'Du hast gewonnen!';
+    } else {
+        text = 'Dein Gegner hat gewonnen!';
+    }
+
+    $('#wins').text(text);
+
+    $('#restart').fadeIn();
 
   });
 
+  $('#restart').on('click', function(){
+      socket.emit('reset_game',
+          {
+              room_nr : localStorage.getItem('processing_room_number'),
+              room_id : localStorage.getItem('processing_room')
+          });
+ });
+
+  // Deletes all canvas elements
+  socket.on('make_reset', function(){
+      var draw_items = $('.single-item');
+
+      draw_items.each(function(index){
+          var canvasElements = $(this).find('canvas');
+          // Draw
+          canvasElements.each(function () {
+              var context     = this.getContext('2d');
+              context.clearRect(0, 0, this.width, this.height);
+          });
+      });
+
+      $('#restart').hide();
+      $('#wins').text('');
+
+  });
 
   drawOpponent = function (x, y, element) {
     var draw_item = $('.single-item[data-x="'+x+'"][data-y="'+y+'"]'),
         canvasElements = $(draw_item).find('canvas');
-
     // Draw
     canvasElements.each(function () {
         drawElement(this, element);
     });
   };
+
 
   drawElement = function (canvasElement, elementName, options) {
     if (elementName == 'x') {
@@ -150,7 +205,9 @@ $(function() {
 
       socket.emit('ask_for_drawing', {
           room_number: localStorage.getItem('processing_room_number'),
+          room_id: localStorage.getItem('processing_room'),
           user_id:localStorage.getItem('user_id'),
+          opponent_id: localStorage.getItem('opponent_id'),
           x : act_click_obj.attr('data-x'),
           y : act_click_obj.attr('data-y')
       });

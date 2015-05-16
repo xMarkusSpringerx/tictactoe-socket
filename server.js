@@ -68,7 +68,6 @@ io.on('connection', function (socket) {
             }
         }
         return false;
-
     }
 
     // If User is Host
@@ -79,8 +78,10 @@ io.on('connection', function (socket) {
         r.table('rooms').insert({
           'number': String(room),
           'host': String(data.user_id),
+
+          'player1': String(data.user_id),
           'player2': String(''),
-          'turn_user_id': String('')
+          'turn_user_id': String(data.user_id)
         }).run(connection, function(err, result) {
           if (err) throw err;
 
@@ -112,17 +113,30 @@ io.on('connection', function (socket) {
             socket.join(row.id); // put user in a channel
 
             // Set Player2 to actual Room
-            r.table("rooms").filter({number: data.room}).update({player2: data.player2, turn_user_id : data.player2}).run(connection, function(err, cursor){
-                if (err) throw err;
-                console.log('Room geupdated');
+            r.table("rooms").filter({number: data.room}).update({player2: data.player2},
+                {
+                returnChanges: true
+                }
+            ).run(connection, function(err, cursor){
+                new_values = cursor.changes[0].new_val;
+
+                io.sockets.in(row.id).emit('connected', {
+                    room : new_values.id,
+                    room_number : new_values.number,
+                    player1: new_values.player1,
+                    player2: new_values.player2
+                });
+
+
             });
 
-            io.sockets.in(row.id).emit('connected', {
-              room : row.id,
-              room_number : row.number
-            });
+            // Set Start-Player
+            io.sockets.in(row.id).emit('setActualTurnUserId', {user_id : row.turn_user_id});
           });
         });
+
+
+
     });
 
     socket.on('set_input', function (data) {
@@ -132,6 +146,9 @@ io.on('connection', function (socket) {
         r.table('turns').filter({"room_number": data.room_number, "x" : data.x, "y" : data.y}).count().run(connection, function(err, cursor) {
             // If entry not exists.
             if(cursor == 0){
+
+                socket.broadcast.to(data.room_id).emit('drawOpponent', data);
+
                 // If valid input
                 r.table('turns').insert({
                     'room_number': String(data.room_number),
@@ -142,8 +159,6 @@ io.on('connection', function (socket) {
                 }).run(connection, function(err, result) {
                     if (err) throw err;
                 });
-
-                socket.broadcast.to(data.room_id).emit('drawOpponent', data);
 
                 r.table('turns').filter({"room_number": data.room_number, "user_id" : data.user_id}).run(connection, function(err, cursor) {
 
@@ -176,9 +191,6 @@ io.on('connection', function (socket) {
 
                 });
 
-
-
-
             } else {
                 console.log('Input schon vorhanden');
             }
@@ -188,6 +200,8 @@ io.on('connection', function (socket) {
     socket.on('ask_for_drawing', function(data){
         user_id = data.user_id;
         room_number = data.room_number;
+        room_id = data.room_id;
+        opponent_id = data.opponent_id;
 
         r.table('turns').filter({"room_number": room_number, "x" : data.x, "y" : data.y}).count().run(connection, function(err, cursor) {
             // If entry not exists.
@@ -195,16 +209,18 @@ io.on('connection', function (socket) {
                 r.table('rooms').filter({"number": room_number}).run(connection, function(err, cursor) {
                     cursor.next(function (err, row) {
 
-                        if(row.turn_user_id == user_id){
+                        if(row.turn_user_id == opponent_id){
                             // Aktueller User möchte erneut einen Eintrag machen -> darf nicht sein
                             socket.emit('allow_drawing',{permission:false});
                         } else {
                             // Opponent is drawing
-                            r.table("rooms").filter({number: room_number}).update({turn_user_id: user_id}).run(connection, function(err, cursor){
+                            r.table("rooms").filter({number: room_number}).update({turn_user_id: opponent_id}).run(connection, function(err, cursor){
                                 if (err) throw err;
                                 console.log('Room geupdated');
                             });
 
+
+                            io.sockets.in(data.room_id).emit('setActualTurnUserId', {user_id : opponent_id});
                             socket.emit('allow_drawing',{permission:true});
 
                         }
@@ -216,5 +232,42 @@ io.on('connection', function (socket) {
         });
 
     });
+
+    socket.on('reset_game', function(data){
+
+        room_nr = data.room_nr;
+        room_id = data.room_id;
+
+
+        r.table("turns").filter({"room_number": room_nr}).delete().run(connection, function(err, cursor){
+            if (err) throw err;
+            console.log(cursor);
+        });
+
+        r.table('rooms').filter({"number": room_nr}).run(connection, function(err, cursor) {
+            if (err) throw err;
+
+            cursor.next(function(err, row){
+                old_player_2 = row.player2;
+                old_player_1 = row.player1;
+
+                r.table("rooms").filter({number: room_nr}).update({player1: old_player_2, player2: old_player_1, turn_user_id:old_player_2}).run(connection, function(err, cursor){
+                    if (err) throw err;
+                    console.log('Neue Runde. Player wurden geswitched');
+                });
+
+                io.sockets.in(data.room_id).emit('setActualTurnUserId', {user_id : old_player_2});
+
+            });
+        });
+
+
+        io.sockets.in(room_id).emit('make_reset');
+
+    });
+
+    socket.on('user_left_room', function(data){
+        console.log('asdlfkjasdflkj');
+    })
 
 });
