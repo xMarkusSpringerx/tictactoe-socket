@@ -22,6 +22,7 @@ r.connect({ host: 'localhost', port: 28015}, function(err, conn) {
       checkTable(list, "user");
       checkTable(list, "rooms");
       checkTable(list, "turns");
+      checkTable(list, "wins");
   });
 
   // Check if table exists
@@ -69,6 +70,7 @@ io.on('connection', function (socket) {
         }
         return false;
     }
+
 
     // If User is Host
     socket.on('new_host', function(data) {
@@ -177,8 +179,6 @@ io.on('connection', function (socket) {
                         ---------
                         */
                         score = score + getScore(row.x, row.y);
-
-
                     });
 
 
@@ -186,7 +186,30 @@ io.on('connection', function (socket) {
 
                     if (checkForWin(score) == true) {
 
-                        io.sockets.in(data.room_id).emit('wins', {player: user_id});
+
+                        r.table('wins').insert({
+                            'room_number': String(data.room_number),
+                            'user_id': String(data.user_id)
+                        }).run(connection, function(err, result) {
+                            if (err) throw err;
+                            console.log('Win erfolgreich eingetragen');
+                        }).then(function(){
+
+
+                            // TODO muss noch in eigene Function ausgelagert werden
+                            r.table('wins').filter({"room_number": room_number, "user_id" : data.user_id}).count().run(connection, function(err, cursor){
+                                if (err) throw err;
+                                io.sockets.in(data.room_id).emit('wins', {user_id : data.user_id, count_wins : cursor});
+                            });
+
+                            r.table('wins').filter({"room_number": room_number, "user_id" : data.opponent_id}).count().run(connection, function(err, cursor){
+                                if (err) throw err;
+                                io.sockets.in(data.room_id).emit('wins', {user_id : data.opponent_id, count_wins : cursor});
+                            });
+
+                            io.sockets.in(data.room_id).emit('actual_win', {player: user_id});
+                        });
+
                     }
 
                 });
@@ -218,7 +241,6 @@ io.on('connection', function (socket) {
                                 if (err) throw err;
                                 console.log('Room geupdated');
                             });
-
 
                             io.sockets.in(data.room_id).emit('setActualTurnUserId', {user_id : opponent_id});
                             socket.emit('allow_drawing',{permission:true});
@@ -265,9 +287,5 @@ io.on('connection', function (socket) {
         io.sockets.in(room_id).emit('make_reset');
 
     });
-
-    socket.on('user_left_room', function(data){
-        console.log('asdlfkjasdflkj');
-    })
 
 });

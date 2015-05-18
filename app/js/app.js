@@ -100,17 +100,26 @@ $(function() {
     opponentElement = "circle";
   });
 
-  socket.on('wins', function(data){
+  socket.on('actual_win', function(data){
     if(localStorage.getItem("user_id") == data.player) {
         text = 'Du hast gewonnen!';
     } else {
         text = 'Dein Gegner hat gewonnen!';
     }
 
-    $('#wins').text(text);
+    $('#actual_win').text(text);
 
     $('#restart').fadeIn();
 
+  });
+
+  socket.on('wins', function(data){
+    if(localStorage.getItem("user_id") == data.user_id) {
+        $('#you').text(data.count_wins);
+    } else {
+        // Wie oft hat dein Gegner gewonnen?
+        $('#opponent').text(data.count_wins);
+    }
   });
 
   $('#restart').on('click', function(){
@@ -135,7 +144,7 @@ $(function() {
       });
 
       $('#restart').hide();
-      $('#wins').text('');
+      $('#actual_win').text('');
 
   });
 
@@ -231,7 +240,8 @@ $(function() {
                   x : draw_x,
                   y : draw_y,
                   element: chosenElement,
-                  user_id : localStorage.getItem('user_id')
+                  user_id : localStorage.getItem('user_id'),
+                  opponent_id : localStorage.getItem('opponent_id')
               });
           });
       } else {
