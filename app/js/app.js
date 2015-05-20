@@ -15,7 +15,7 @@ $(function() {
     opponentElement;
 
   // Set UserId to Local Storage
-  generateUserId = function(){
+  generateUserId = function() {
     user_id = Math.floor(Math.random()*10000);
     localStorage.setItem('user_id', user_id);
 
@@ -23,7 +23,6 @@ $(function() {
   };
     
   generateUserId();
-
 
   //Hide it first
   // TODO: Hide Default in CSS
@@ -145,7 +144,6 @@ $(function() {
 
       $('#restart').hide();
       $('#actual_win').text('');
-
   });
 
   drawOpponent = function (x, y, element) {
@@ -156,7 +154,6 @@ $(function() {
         drawElement(this, element);
     });
   };
-
 
   drawElement = function (canvasElement, elementName, options) {
     if (elementName == 'x') {
@@ -185,6 +182,17 @@ $(function() {
     context.stroke();
   };
 
+    askForDrawing = function (datax, datay) {
+        socket.emit('ask_for_drawing', {
+            room_number: localStorage.getItem('processing_room_number'),
+            room_id: localStorage.getItem('processing_room'),
+            user_id:localStorage.getItem('user_id'),
+            opponent_id: localStorage.getItem('opponent_id'),
+            x : datax,
+            y : datay
+        });
+    };
+
   drawX = function (canvasElement, options) {
       var context = canvasElement.getContext('2d'),
           width   = canvasElement.width,
@@ -206,29 +214,51 @@ $(function() {
   };
 
   $(document).ready(function () {
+    $(window).keypress(function(e) {
+      var key = e.which, x, y;
+
+        switch (key) {
+            case 49:
+                x = 3; y = 1;
+                break;
+            case 50:
+                x = 3; y = 2;
+                break;
+            case 51:
+                x = 3; y = 3;
+                break;
+            case 52:
+                x = 2; y = 1;
+                break;
+            case 53:
+                x = 2; y = 2;
+                break;
+            case 54:
+                x = 2; y = 3;
+                break;
+            case 55:
+                x = 1; y = 1;
+                break;
+            case 56:
+                x = 1; y = 2;
+                break;
+            case 57:
+                x = 1; y = 3;
+                break;
+        }
+
+      askForDrawing(x, y);
+    });
+
     $('.single-item').on('click', function () {
       act_click_obj = $(this);
 
-      draw_x = act_click_obj.attr('data-x');
-      draw_y = act_click_obj.attr('data-y');
-
-      socket.emit('ask_for_drawing', {
-          room_number: localStorage.getItem('processing_room_number'),
-          room_id: localStorage.getItem('processing_room'),
-          user_id:localStorage.getItem('user_id'),
-          opponent_id: localStorage.getItem('opponent_id'),
-          x : act_click_obj.attr('data-x'),
-          y : act_click_obj.attr('data-y')
-      });
-
+      askForDrawing(act_click_obj.attr('data-x'), act_click_obj.attr('data-y'));
     });
 
     socket.on('allow_drawing', function(data){
-
       if (data.permission == true) {
-
-          var canvasElements = act_click_obj.find('canvas');
-
+          var canvasElements = $('[data-x="' + data.x +  '"][data-y="' + data.y +'"]').find('canvas');
 
           // Draw
           canvasElements.each(function () {
@@ -237,8 +267,8 @@ $(function() {
               socket.emit('set_input', {
                   room_id : localStorage.getItem('processing_room'),
                   room_number : localStorage.getItem('processing_room_number'),
-                  x : draw_x,
-                  y : draw_y,
+                  x : data.x,
+                  y : data.y,
                   element: chosenElement,
                   user_id : localStorage.getItem('user_id'),
                   opponent_id : localStorage.getItem('opponent_id')

@@ -234,17 +234,20 @@ io.on('connection', function (socket) {
 
                         if(row.turn_user_id == opponent_id){
                             // Aktueller User möchte erneut einen Eintrag machen -> darf nicht sein
-                            socket.emit('allow_drawing',{permission:false});
+                            socket.emit('allow_drawing',{ permission:false });
                         } else {
                             // Opponent is drawing
-                            r.table("rooms").filter({number: room_number}).update({turn_user_id: opponent_id}).run(connection, function(err, cursor){
+                            r.table("rooms").filter({ number: room_number }).update({ turn_user_id: opponent_id }).run(connection, function(err, cursor){
                                 if (err) throw err;
                                 console.log('Room geupdated');
                             });
 
-                            io.sockets.in(data.room_id).emit('setActualTurnUserId', {user_id : opponent_id});
-                            socket.emit('allow_drawing',{permission:true});
-
+                            io.sockets.in(data.room_id).emit('setActualTurnUserId', { user_id : opponent_id });
+                            socket.emit('allow_drawing', {
+                                permission:true,
+                                x: data.x,
+                                y: data.y
+                            });
                         }
                     });
                 });
